@@ -16,6 +16,7 @@
 #include <Arduino.h>
 #include "Button.h"
 
+// bit positions in the state byte
 #define CURRENT 0
 #define PREVIOUS 1
 #define CHANGED 2
@@ -28,10 +29,14 @@
 || @parameter buttonPin  sets the pin that this switch is connected to
 || @parameter buttonMode indicates BUTTON_PULLUP or BUTTON_PULLDOWN resistor
 */
-Button::Button(uint8_t buttonPin, uint8_t buttonMode){
+Button::Button(uint8_t buttonPin, uint8_t buttonMode, bool _debounceMode, int _debounceDuration){
 	pin=buttonPin;
   pinMode(pin,INPUT);
   
+  debounceMode = _debounceMode;
+  debounceDuration = _debounceDuration;
+  debounceStartTime = millis();
+
 	buttonMode==BUTTON_PULLDOWN ? pulldown() : pullup(buttonMode);
   state = 0;
   bitWrite(state,CURRENT,!mode);
@@ -72,13 +77,13 @@ void Button::pulldown(void)
 
 /*
 || @description
-|| | Return the bitRead(state,CURRENT) of the switch
+|| | Read and write states; issue callbacks
 || #
 || 
 || @return true if button is pressed
 */
-bool Button::isPressed(void)
-{  
+void Button::process(void)
+{
   //save the previous value
   bitWrite(state,PREVIOUS,bitRead(state,CURRENT));
   
@@ -97,6 +102,20 @@ bool Button::isPressed(void)
   //handle state changes
   if (bitRead(state,CURRENT) != bitRead(state,PREVIOUS))
   {
+    unsigned int interval = millis() - debounceStartTime;
+    // if(debounceMode){
+    //   Serial.print("debounceStartTime: ");
+    //   Serial.print(debounceStartTime);
+    //   Serial.print("\tdebounceDuration: ");
+    //   Serial.println(debounceDuration);
+      // Serial.println(interval);
+    // }
+    if(debounceMode && interval < debounceDuration){
+      // not enough time has passed; ignore
+      return;
+    }
+    // Serial.println("state changed");
+    debounceStartTime = millis();
     //the state changed to PRESSED
     if (bitRead(state,CURRENT) == true) 
     {
@@ -119,7 +138,7 @@ bool Button::isPressed(void)
   {
     //note that the state did not change
     bitWrite(state,CHANGED,false);
-    //should we trigger a onHold event?
+    //should we trigger an onHold event?
     if (pressedStartTime!=-1 && !triggeredHoldEvent) 
     {
       if (millis()-pressedStartTime > holdEventThreshold) 
@@ -132,6 +151,18 @@ bool Button::isPressed(void)
       }
     }
   }
+}
+
+/*
+|| @description
+|| | Return the bitRead(state,CURRENT) of the switch
+|| #
+|| 
+|| @return true if button is pressed
+*/
+bool Button::isPressed(bool proc)
+{
+  if(proc) process();
 	return bitRead(state,CURRENT);
 }
 
@@ -140,8 +171,9 @@ bool Button::isPressed(void)
 || | Return true if the button has been pressed
 || #
 */
-bool Button::wasPressed(void)
+bool Button::wasPressed(bool proc)
 {
+  if(proc) process();
   return bitRead(state,CURRENT);
 }
 
@@ -150,8 +182,9 @@ bool Button::wasPressed(void)
 || | Return true if state has been changed
 || #
 */
-bool Button::stateChanged(void)
+bool Button::stateChanged(bool proc)
 {
+  if(proc) process();
   return bitRead(state,CHANGED);
 }
 
@@ -160,9 +193,10 @@ bool Button::stateChanged(void)
 || | Return true if the button is pressed, and was not pressed before
 || #
 */
-bool Button::uniquePress(void)
+bool Button::uniquePress()
 {
-  return (isPressed() && stateChanged());
+  process();
+  return (isPressed(false) && stateChanged(false));
 }
 
 /*
@@ -174,6 +208,7 @@ bool Button::uniquePress(void)
 */
 bool Button::held(unsigned int time /*=0*/) 
 {
+  process();
   unsigned int threshold = time ? time : holdEventThreshold; //use holdEventThreshold if time == 0
 	//should we trigger a onHold event?
   if (pressedStartTime!=-1 && !triggeredHoldEvent) 

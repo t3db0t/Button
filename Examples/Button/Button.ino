@@ -1,12 +1,13 @@
 /*
 ||
-|| @file Button.pde
+|| @file Button.ino
 || @version 1.1
 || @author Alexander Brevig
 || @contact alexanderbrevig@gmail.com
 ||
 || @description
 || | Display the intuitive way of using a button when using this Hardware Abstraction class
+|| | Minor fixes by Ted Hayes / ted.hayes@liminastudio.com
 || #
 ||
 || @license
@@ -24,7 +25,7 @@
 || Wiring:
 || GND -----/ ------ pin 12
 */
-Button button = Button(12,PULLUP);
+Button button = Button(12, BUTTON_PULLUP_INTERNAL);
 
 void setup(){
   pinMode(13,OUTPUT); //debug to led 13

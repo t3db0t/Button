@@ -28,14 +28,16 @@ typedef void (*buttonEventHandler)(Button&);
 class Button {
   public:
   
-    Button(uint8_t buttonPin, uint8_t buttonMode=BUTTON_PULLUP_INTERNAL);
+    Button(uint8_t buttonPin, uint8_t buttonMode=BUTTON_PULLUP_INTERNAL, bool _debounceMode=true, int _debounceDuration=20);
     
+    uint8_t             pin;
     void pullup(uint8_t buttonMode);
     void pulldown();
-    
-    bool isPressed();
-    bool wasPressed();
-    bool stateChanged();
+    void process();
+
+    bool isPressed(bool proc=true);
+    bool wasPressed(bool proc=true);
+    bool stateChanged(bool proc=true);
     bool uniquePress();
     
     void setHoldThreshold(unsigned int holdTime);
@@ -53,17 +55,19 @@ class Button {
     bool operator==(Button &rhs);
     
   private: 
-    uint8_t pin;
-    uint8_t mode;
-    uint8_t state;
-    unsigned int pressedStartTime;
-    unsigned int holdEventThreshold;
-    buttonEventHandler cb_onPress;
-    buttonEventHandler cb_onRelease;
-    buttonEventHandler cb_onClick;
-    buttonEventHandler cb_onHold;
-    unsigned int numberOfPresses;
-    bool triggeredHoldEvent;
+    uint8_t             mode;
+    uint8_t             state;
+    bool                debounceMode;
+    unsigned int        pressedStartTime;
+    unsigned int        holdEventThreshold;
+    unsigned long       debounceStartTime;
+    int                 debounceDuration;
+    buttonEventHandler  cb_onPress;
+    buttonEventHandler  cb_onRelease;
+    buttonEventHandler  cb_onClick;
+    buttonEventHandler  cb_onHold;
+    unsigned int        numberOfPresses;
+    bool                triggeredHoldEvent;
 };
 
 #endif

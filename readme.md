@@ -56,7 +56,11 @@ It's not hard, just tedious.  This new and improved Button library makes this mu
 * Built-in debouncing
 
     `// Sets 50ms debounce duration`
-    
+
     `Button button = Button(12, BUTTON_PULLUP_INTERNAL, true, 50);`
 
-I hope you find this useful!  Please report any bugs using the github issue tracker.
+## Installing
+
+To install, [download](https://github.com/virgildisgr4ce/Button/zipball/master) the library, extract it to ~/Documents/Arduino/libraries and rename the folder "Button." (Github generates a different name for the zip link.) Restart Arduino if it was already open.
+
+I hope you find this useful! Please report any bugs using the [Github issue tracker](https://github.com/virgildisgr4ce/Button/issues).

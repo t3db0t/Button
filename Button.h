@@ -58,7 +58,7 @@ class Button {
     uint8_t             mode;
     uint8_t             state;
     bool                debounceMode;
-    unsigned int        pressedStartTime;
+    unsigned long       pressedStartTime;
     unsigned int        holdEventThreshold;
     unsigned long       debounceStartTime;
     int                 debounceDuration;

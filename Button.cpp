@@ -60,8 +60,12 @@ void Button::pullup(uint8_t buttonMode)
 {
 	mode=BUTTON_PULLUP;
   if (buttonMode == BUTTON_PULLUP_INTERNAL) 
-  {
+  {	  
+#ifdef ESP8266
+	  pinMode(pin, INPUT_PULLUP);
+#else
 	  digitalWrite(pin,HIGH);
+#endif	  
   }
 }
 
